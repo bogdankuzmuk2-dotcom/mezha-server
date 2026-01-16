@@ -12,13 +12,13 @@ app.get("/", (req, res) => {
   res.send("MEZHA Server is running 🚀");
 });
 
-// API endpoint
+// API маршрут
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
     if (!userMessage) {
-      return res.status(400).json({ error: "No message provided" });
+      return res.status(400).json({ error: "Message is required" });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -28,8 +28,9 @@ app.post("/api/chat", async (req, res) => {
         "Authorization": Bearer ${OPENAI_API_KEY}
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-mini",
         messages: [
+          { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: userMessage }
         ]
       })
@@ -38,15 +39,16 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json();
 
     const reply =
-      data.choices?.[0]?.message?.content || "No response from OpenAI";
+      data.choices?.[0]?.message?.content || "No response from AI";
 
     res.json({ reply });
+
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Server error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on port", PORT);
 });
