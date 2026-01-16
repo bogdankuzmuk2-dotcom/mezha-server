@@ -7,18 +7,22 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Головна сторінка
+// Перевірка що сервер живий
 app.get("/", (req, res) => {
-  res.send("🚀 MEZHA Server is running!");
+  res.send("MEZHA Server is running 🚀");
 });
 
-// API endpoint
-app.post("/ask", async (req, res) => {
+// API для запиту до OpenAI
+app.post("/api/chat", async (req, res) => {
   try {
-    const userText = req.body.text;
+    const userMessage = req.body.message;
 
-    if (!userText) {
-      return res.json({ error: "No text provided" });
+    if (!OPENAI_API_KEY) {
+      return res.status(500).json({ error: "API key not set" });
+    }
+
+    if (!userMessage) {
+      return res.status(400).json({ error: "No message provided" });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -30,24 +34,25 @@ app.post("/ask", async (req, res) => {
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         messages: [
-          { role: "system", content: "You are MEZHA assistant." },
-          { role: "user", content: userText }
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: userMessage }
         ]
       })
     });
 
     const data = await response.json();
 
-    const answer =
-      data.choices?.[0]?.message?.content || "No response";
+    res.json({
+      reply: data.choices?.[0]?.message?.content || "No response"
+    });
 
-    res.json({ reply: answer });
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// Запуск сервера
 app.listen(PORT, () => {
-  console.log("MEZHA server running on port", PORT);
+  console.log(`Server running on port ${PORT}`);
 });
