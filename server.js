@@ -27,7 +27,7 @@ app.post("/api/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": Bearer ${OPENAI_API_KEY}   // ← ВАЖЛИВО: бектики!
+        "Authorization": Bearer ${process.env.OPENAI_API_KEY}   // ← ВАЖЛИВО: бектики!
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
