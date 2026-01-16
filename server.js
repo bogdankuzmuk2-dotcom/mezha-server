@@ -7,11 +7,13 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// Головна сторінка
 app.get("/", (req, res) => {
-  res.send("MEZHA Server is running 🚀");
+  res.send("🚀 MEZHA Server is running!");
 });
 
-app.post("/chat", async (req, res) => {
+// API endpoint
+app.post("/ask", async (req, res) => {
   try {
     const userText = req.body.text;
 
@@ -23,24 +25,29 @@ app.post("/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-Authorization: "Bearer " + process.env.OPENAI_API_KEY,
+        "Authorization": Bearer ${OPENAI_API_KEY}
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: userText }],
-      }),
+        model: "gpt-4.1-mini",
+        messages: [
+          { role: "system", content: "You are MEZHA assistant." },
+          { role: "user", content: userText }
+        ]
+      })
     });
 
     const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content || "No response";
+
+    const answer =
+      data.choices?.[0]?.message?.content || "No response";
 
     res.json({ reply: answer });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: "Server error" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("MEZHA server running on port", PORT);
 });
