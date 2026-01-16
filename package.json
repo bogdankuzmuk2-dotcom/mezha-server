@@ -1,6 +1,7 @@
 {
   "name": "mezha-server",
   "version": "1.0.0",
+  "description": "MEZHA API server",
   "main": "server.js",
   "type": "module",
   "scripts": {
