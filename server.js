@@ -1,4 +1,5 @@
 import express from "express";
+import fetch from "node-fetch";
 
 const app = express();
 app.use(express.json());
@@ -6,12 +7,17 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// Перевірка, чи є ключ
+if (!OPENAI_API_KEY) {
+  console.error("❌ OPENAI_API_KEY is not set in environment variables");
+}
+
 // Головна сторінка
 app.get("/", (req, res) => {
   res.send("MEZHA Server is running 🚀");
 });
 
-// API маршрут
+// API endpoint для чату
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -27,7 +33,7 @@ app.post("/api/chat", async (req, res) => {
         "Authorization": Bearer ${OPENAI_API_KEY}
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: userMessage }
@@ -41,13 +47,13 @@ app.post("/api/chat", async (req, res) => {
       data.choices?.[0]?.message?.content || "No response from AI";
 
     res.json({ reply });
-
   } catch (error) {
     console.error("Server error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// Запуск сервера
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log(`✅ Server running on port ${PORT}`);
 });
