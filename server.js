@@ -4,36 +4,33 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-// Перевірка, чи є ключ
-if (!OPENAI_API_KEY) {
-  console.error("❌ OPENAI_API_KEY is not set in environment variables");
-}
-
-// Головна сторінка
+// Головна сторінка (перевірка що сервер живий)
 app.get("/", (req, res) => {
   res.send("MEZHA Server is running 🚀");
 });
 
-// API endpoint для чату
+// API endpoint
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
     if (!userMessage) {
-      return res.status(400).json({ error: "Message is required" });
+      return res.status(400).json({ error: "No message provided" });
+    }
+
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    if (!OPENAI_API_KEY) {
+      return res.status(500).json({ error: "OPENAI_API_KEY is missing" });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": Bearer ${OPENAI_API_KEY}
+        "Authorization": Bearer ${OPENAI_API_KEY}   // ← ВАЖЛИВО: бектики!
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: userMessage }
@@ -44,16 +41,18 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json();
 
     const reply =
-      data.choices?.[0]?.message?.content || "No response from AI";
+      data?.choices?.[0]?.message?.content || "No response from AI";
 
     res.json({ reply });
+
   } catch (error) {
     console.error("Server error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Запуск сервера
+// Render автоматично дає порт через process.env.PORT
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log("Server started on port", PORT);
 });
